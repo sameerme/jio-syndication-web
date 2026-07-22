@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Serial Entry Form</title>
+  <style>
+    :root {
+      /* Pastel palette */
+      --pastel-1: #ffd9ec;   /* soft pink   */
+      --pastel-2: #d9e4ff;   /* soft blue   */
+      --pastel-3: #d9fff0;   /* soft mint   */
+      --pastel-4: #fff3d9;   /* soft peach  */
+
+      --glass-bg: rgba(255, 255, 255, 0.35);
+      --glass-bg-strong: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: rgba(31, 38, 135, 0.18);
+
+      --text: #3a3550;
+      --text-soft: #6b6580;
+      --accent: #a678f0;      /* lavender accent */
+      --accent-strong: #8b5cf6;
+
+      --ok: #16a34a;
+      --err: #dc2626;
+
+      --radius-lg: 26px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+
+      --duration: 260ms;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(1rem, 3vw, 3rem);
+      position: relative;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 15% 20%, var(--pastel-1), transparent 45%),
+        radial-gradient(circle at 85% 15%, var(--pastel-2), transparent 45%),
+        radial-gradient(circle at 75% 85%, var(--pastel-3), transparent 45%),
+        radial-gradient(circle at 20% 90%, var(--pastel-4), transparent 45%),
+        linear-gradient(135deg, #fdf6ff 0%, #f2f7ff 100%);
+    }
+
+    /* Floating soft blobs for depth */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.55;
+      z-index: 0;
+      pointer-events: none;
+    }
+    body::before {
+      width: 340px; height: 340px;
+      background: var(--pastel-1);
+      top: -80px; left: -60px;
+    }
+    body::after {
+      width: 300px; height: 300px;
+      background: var(--pastel-3);
+      bottom: -70px; right: -50px;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(760px, 100%);
+      background: var(--glass-bg);
+      backdrop-filter: blur(22px) saturate(150%);
+      -webkit-backdrop-filter: blur(22px) saturate(150%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow:
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      padding: clamp(1.5rem, 4vw, 2.75rem);
+    }
+
+    .card__header { margin-bottom: 1.75rem; }
+
+    .card__title {
+      font-size: clamp(1.5rem, 1rem + 2vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(120deg, var(--accent-strong), #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .card__subtitle {
+      margin-top: 0.35rem;
+      color: var(--text-soft);
+      font-size: 0.95rem;
+    }
+
+    /* Grid table */
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(140px, 1.4fr) minmax(90px, 0.9fr) minmax(160px, 2fr);
+      gap: 0.6rem 0.75rem;
+    }
+
+    .grid__head {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      padding: 0 0.35rem 0.5rem;
+    }
+
+    .serial {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--glass-bg-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 0.85rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .serial__num {
+      flex: 0 0 auto;
+      width: 26px; height: 26px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #f9a8d4);
+      box-shadow: 0 2px 6px rgba(166,120,240,0.4);
+    }
+
+    .field {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: rgba(255,255,255,0.45);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 0.85rem;
+      transition: border-color var(--duration) var(--ease),
+                  box-shadow var(--duration) var(--ease),
+                  background var(--duration) var(--ease);
+    }
+    .field::placeholder { color: #a9a3bd; }
+    .field:hover { background: rgba(255,255,255,0.6); }
+    .field:focus {
+      outline: none;
+      background: rgba(255,255,255,0.8);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(166,120,240,0.18);
+    }
+
+    /* Expandable textarea */
+    .field--area {
+      resize: vertical;
+      min-height: 48px;
+      max-height: 220px;
+      line-height: 1.45;
+      overflow: hidden;
+    }
+
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .status {
+      flex: 1 1 auto;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+    .status[data-state="ok"] { color: var(--ok); font-weight: 600; }
+    .status[data-state="err"] { color: var(--err); font-weight: 600; }
+
+    .btn {
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      padding: 0.85rem 2.4rem;
+      border-radius: 999px;
+      background: linear-gradient(120deg, var(--accent-strong), #ec4899);
+      box-shadow: 0 8px 22px rgba(139,92,246,0.35),
+                  inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: transform var(--duration) var(--ease),
+                  box-shadow var(--duration) var(--ease),
+                  filter var(--duration) var(--ease);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(139,92,246,0.45);
+      filter: brightness(1.05);
+    }
+    .btn:active { transform: translateY(0); }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(236,72,153,0.35);
+    }
+    .btn:disabled {
+      cursor: default;
+      filter: grayscale(0.3) brightness(0.95);
+      transform: none;
+    }
+
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; gap: 0.4rem; }
+      .grid__head { display: none; }
+      .row { display: contents; }
+      .serial { margin-top: 0.85rem; }
+      .actions { flex-wrap: wrap; }
+      .status { order: 2; flex-basis: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header class="card__header">
+      <h1 class="card__title">Serial Entry Form</h1>
+      <p class="card__subtitle">Enter a numeric value and notes for each serial. Submit downloads a ready-to-use "output" folder as a zip — everything runs in your browser, nothing is uploaded anywhere.</p>
+    </header>
+
+    <form id="entryForm" novalidate>
+      <div class="grid">
+        <div class="grid__head">Serial</div>
+        <div class="grid__head">Value</div>
+        <div class="grid__head">Notes</div>
+
+        <!-- Rows are injected by JS from the serials list -->
+      </div>
+
+      <div class="actions">
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <button type="submit" class="btn">Submit</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="jszip.min.js"></script>
+  <script src="assets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
